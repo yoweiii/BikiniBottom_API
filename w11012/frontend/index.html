@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>比奇堡居民貼文牆</title>
+  <style>
+    body { 
+      font-family: "Microsoft JhengHei", Arial, sans-serif; 
+      background: #f0f8ff; 
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #94d1f1;
+      color: rgb(0, 0, 0);
+      padding: 20px;
+      text-align: center;
+    }
+    header h1 {
+      margin: 10px 0;
+    }
+    header img {
+      max-width: 400px;
+      border-radius: 15px;
+      margin-top: 10px;
+    }
+    main {
+      max-width: 700px;
+      margin: 20px auto;
+      padding: 0 10px;
+    }
+    .post {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .post p {
+      margin: 8px 0;
+    }
+    .likes {
+      color: #e63946;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    button.like-btn {
+      background: #ffb703;
+      border: none;
+      border-radius: 20px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+    button.like-btn:hover {
+      background: #fb8500;
+      color: white;
+    }
+    .comments {
+      margin-top: 15px;
+      font-size: 14px;
+    }
+    .comments ul {
+      padding-left: 20px;
+      margin: 8px 0;
+    }
+    .comment-box {
+      display: flex;
+      margin-top: 10px;
+    }
+    .comment-box input {
+      flex: 1;
+      padding: 8px;
+      border-radius: 6px 0 0 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    .comment-box button {
+      background: #124966;
+      color: rgb(241, 239, 239);
+      border: none;
+      padding: 8px 16px;
+      border-radius: 0 6px 6px 0;
+      cursor: pointer;
+    }
+    .comment-box button:hover {
+      background: #6d1461;
+    }
+
+    main {
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 0 10px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2欄 */
+  gap: 20px; /* 間距 */
+}
+
+  </style>
+</head>
+<body>
+  <header>
+    <h1>比奇堡居民貼文牆</h1>
+    <img src="../img/1.jpg" alt="比奇寶居民">
+  </header>
+
+  <main id="posts">載入中...</main>
+
+  <script>
+    const API_BASE = "http://127.0.0.1:8000"; 
+
+    async function loadPosts() {
+      try {
+        const res = await fetch(`${API_BASE}/posts`);
+        const data = await res.json();
+        const postsDiv = document.getElementById("posts");
+        postsDiv.innerHTML = "";
+
+        Object.entries(data).forEach(([id, post]) => {
+          const div = document.createElement("div");
+          div.className = "post";
+          div.innerHTML = `
+            <p><strong>${post.content}</strong></p>
+            <p class="likes">👍 ${post.likes} 位居民按讚</p>
+            <button class="like-btn" onclick="likePost(${id})">❤️ Like</button>
+            <div class="comments">
+              <strong>留言區：</strong>
+              <ul>${post.comments.map(c => `<li>${c}</li>`).join("")}</ul>
+              <div class="comment-box">
+                <input type="text" id="comment-${id}" placeholder="寫下你的留言...">
+                <button onclick="addComment(${id})">送出</button>
+              </div>
+            </div>
+          `;
+          postsDiv.appendChild(div);
+        });
+      } catch (err) {
+        document.getElementById("posts").innerHTML = "⚠️ 無法連線到後端 API";
+      }
+    }
+
+    async function likePost(id) {
+      await fetch(`${API_BASE}/posts/${id}/like`, { method: "POST" });
+      loadPosts();
+    }
+
+    async function addComment(id) {
+      const input = document.getElementById(`comment-${id}`);
+      const text = input.value.trim();
+      if (!text) return alert("留言不能是空的喔！");
+
+      const res = await fetch(`${API_BASE}/posts/${id}/comment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text })
+      });
+
+      if (res.ok) {
+        input.value = "";
+        loadPosts();
+      } else {
+        alert("發送留言失敗！");
+      }
+    }
+
+    loadPosts();
+  </script>
+</body>
+</html>
