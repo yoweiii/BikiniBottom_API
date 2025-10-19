@@ -107,14 +107,34 @@
 
   <main id="posts">載入中...</main>
 
-  <script>
-  const API_BASE = "https://bikini-bottom-api.onrender.com";  // 換成你的 Render 網址
+ <script>
+  const API_BASE = "https://bikini-bottom-api.onrender.com";  // 你的 Render API 網址
 
   async function loadPosts() {
     try {
       const res = await fetch(`${API_BASE}/posts`);
       const data = await res.json();
-      ...
+      const postsDiv = document.getElementById("posts");
+      postsDiv.innerHTML = "";
+
+      Object.entries(data).forEach(([id, post]) => {
+        const div = document.createElement("div");
+        div.className = "post";
+        div.innerHTML = `
+          <p><strong>${post.content}</strong></p>
+          <p class="likes">👍 ${post.likes} 位居民按讚</p>
+          <button class="like-btn" onclick="likePost(${id})">❤️ Like</button>
+          <div class="comments">
+            <strong>留言區：</strong>
+            <ul>${post.comments.map(c => `<li>${c}</li>`).join("")}</ul>
+            <div class="comment-box">
+              <input type="text" id="comment-${id}" placeholder="寫下你的留言...">
+              <button onclick="addComment(${id})">送出</button>
+            </div>
+          </div>
+        `;
+        postsDiv.appendChild(div);
+      });
     } catch (err) {
       document.getElementById("posts").innerHTML = "⚠️ 無法連線到後端 API";
     }
@@ -146,5 +166,6 @@
 
   loadPosts();
 </script>
+
 </body>
 </html>

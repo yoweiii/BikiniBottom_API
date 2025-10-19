@@ -7,7 +7,7 @@ app = FastAPI(title="簡單貼文 API")
 # ✅ 允許跨域 (解決前端無法連線問題)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 測試時允許所有來源
+    allow_origins=["*"],  # 測試時允許所有來源，可以改成 Vercel 網址
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -45,4 +45,3 @@ def comment_post(post_id: int, comment: Comment):
         posts[post_id]["comments"].append(comment.text)
         return {"message": "留言成功！", "data": posts[post_id]}
     return {"error": "找不到貼文"}
-
